@@ -1,0 +1,25 @@
+# Cursor AI Rules for PostgreSQL MCP Server Project
+
+## Communication Style
+- Keep responses SHORT and CONCISE
+- Avoid lengthy explanations unless explicitly asked
+- Use bullet points over paragraphs
+- Get straight to the point
+- No excessive examples or documentation in responses
+
+## Code Changes
+- Make changes directly without asking for permission
+- Commit and push automatically when appropriate
+- Use clear, brief commit messages
+
+## Documentation
+- Keep inline code comments minimal
+- Focus on "what" not "why" unless complex
+- Prefer self-documenting code
+
+## Project Context
+- This is a PostgreSQL MCP server with Docker
+- Uses stdio transport for local Cursor IDE integration
+- Security: local-only, no network exposure
+- Python 3.11+, psycopg2, MCP SDK
+
