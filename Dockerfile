@@ -33,3 +33,4 @@ ENV PYTHONPATH=/app
 # Set entrypoint to run the MCP server
 ENTRYPOINT ["python", "-m", "src.postgresql_mcp_server.server"]
 
+

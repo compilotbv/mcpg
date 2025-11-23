@@ -203,3 +203,4 @@ class DatabaseManager:
         """Context manager exit."""
         self.close()
 
+
