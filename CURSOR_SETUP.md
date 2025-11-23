@@ -116,33 +116,33 @@ Use `host.docker.internal` as the `POSTGRES_HOST`:
 "-e", "POSTGRES_HOST=host.docker.internal"
 ```
 
-#### Connecting to PostgreSQL in Docker
+#### Connecting to PostgreSQL in Another Docker Container
 
-If your PostgreSQL is running in another Docker container, you need to connect both containers to the same network:
+If your PostgreSQL is running in another Docker container, connect both to the same network:
 
 ```bash
-# Create a Docker network
+# Create a Docker network (if not exists)
 docker network create pg-network
 
-# Run your existing PostgreSQL container on this network
-docker run --network pg-network --name my-postgres ...
+# Connect your existing PostgreSQL container to the network
+docker network connect pg-network your-postgres-container
 
-# Update the MCP server configuration to use the network
+# Update docker-compose.yml to use the network
 ```
 
-Update args in Cursor config:
+Add to `docker-compose.yml`:
 
-```json
-"args": [
-  "run",
-  "-i",
-  "--rm",
-  "--network",
-  "pg-network",
-  "-e",
-  "POSTGRES_HOST=my-postgres",
-  ...
-]
+```yaml
+services:
+  postgresql-mcp-server:
+    networks:
+      - pg-network
+    environment:
+      - POSTGRES_HOST=your-postgres-container
+
+networks:
+  pg-network:
+    external: true
 ```
 
 ### 4. Test the Connection

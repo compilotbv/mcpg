@@ -28,13 +28,15 @@ cp .env.example .env
 # Edit .env with your database credentials
 ```
 
-### 3. Test with Docker Compose
+### 3. Run with Docker Compose
 
-Start the test PostgreSQL database and MCP server:
+Edit `.env` file with your PostgreSQL connection details, then start the MCP server:
 
 ```bash
 docker-compose up -d
 ```
+
+Note: This connects to your existing PostgreSQL database (not included).
 
 ### 4. Configure Cursor IDE
 
@@ -140,24 +142,15 @@ Environment variables:
 
 ## Deployment Options
 
-### Option 1: Connect to Existing PostgreSQL
+### Option 1: Using Docker Compose (Recommended)
 
-Use `docker-compose.external.yml`:
-
-```bash
-# Edit .env with your PostgreSQL credentials
-docker-compose -f docker-compose.external.yml up -d
-```
-
-### Option 2: Include Test PostgreSQL
-
-Use `docker-compose.yml`:
+Edit `.env` with your PostgreSQL credentials:
 
 ```bash
 docker-compose up -d
 ```
 
-### Option 3: Direct Docker Run
+### Option 2: Direct Docker Run
 
 ```bash
 docker run -i --rm \
@@ -184,7 +177,6 @@ mcpg/
 │   └── maintenance_manager.py  # Maintenance tools
 ├── Dockerfile
 ├── docker-compose.yml
-├── docker-compose.external.yml
 ├── requirements.txt
 ├── .env.example
 ├── cursor-mcp-config.json
