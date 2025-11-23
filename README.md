@@ -1,9 +1,11 @@
 # PostgreSQL MCP Server
 
-A Model Context Protocol (MCP) server for PostgreSQL that enables natural language database interactions through Cursor IDE. Built with Python and Docker for easy deployment and secure database management.
+Model Context Protocol server for PostgreSQL with HTTP/SSE transport for remote deployment. Built with Python, FastAPI, and Docker for Elestio or any cloud platform.
 
 ## Features
 
+- **HTTP/SSE Transport**: Remote access via HTTPS
+- **API Key Authentication**: Secure access control
 - **Query Execution**: Execute SELECT queries with natural language
 - **Schema Management**: Create, alter, and drop tables and indexes
 - **Data Manipulation**: Insert, update, and delete data
@@ -21,47 +23,44 @@ docker build -t postgresql-mcp-server .
 
 ### 2. Configure Environment
 
-Copy `.env.example` to `.env` and update with your PostgreSQL credentials:
+Generate API key:
+```bash
+python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+Copy `.env.example` to `.env` and update:
 
 ```bash
 cp .env.example .env
-# Edit .env with your database credentials
+# Edit .env with your PostgreSQL and API key
 ```
 
 ### 3. Run with Docker Compose
-
-Edit `.env` file with your PostgreSQL connection details, then start the MCP server:
 
 ```bash
 docker-compose up -d
 ```
 
-Note: This connects to your existing PostgreSQL database (not included).
+Server will be available at `http://localhost:8080`
 
 ### 4. Configure Cursor IDE
 
-See [CURSOR_SETUP.md](CURSOR_SETUP.md) for detailed integration instructions.
-
-Quick configuration:
+Add to Cursor MCP settings:
 
 ```json
 {
   "mcpServers": {
     "postgresql": {
-      "command": "docker",
-      "args": [
-        "run", "-i", "--rm",
-        "-e", "POSTGRES_HOST=host.docker.internal",
-        "-e", "POSTGRES_PORT=5432",
-        "-e", "POSTGRES_DB=your_db",
-        "-e", "POSTGRES_USER=your_user",
-        "-e", "POSTGRES_PASSWORD=your_password",
-        "postgresql-mcp-server"
-      ]
+      "url": "https://your-server.com:8080",
+      "headers": {
+        "Authorization": "Bearer your_api_key"
+      }
     }
   }
 }
 ```
+
+See [ELESTIO_DEPLOY.md](ELESTIO_DEPLOY.md) for deployment guide.
 
 ## Available Tools
 

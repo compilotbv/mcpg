@@ -4,8 +4,14 @@ mcp>=1.0.0
 # PostgreSQL adapter
 psycopg2-binary>=2.9.9
 
-# Async support
-asyncio-mqtt>=0.16.1
+# Web server for SSE transport
+fastapi>=0.109.0
+uvicorn>=0.27.0
+sse-starlette>=1.8.2
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
 
 # Data validation and serialization
 pydantic>=2.5.0
@@ -15,5 +21,8 @@ python-dotenv>=1.0.0
 
 # JSON handling
 orjson>=3.9.10
+
+# CORS support
+python-multipart>=0.0.6
 
 
