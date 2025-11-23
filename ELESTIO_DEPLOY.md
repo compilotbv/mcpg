@@ -64,10 +64,10 @@ services:
     image: your-dockerhub-username/postgresql-mcp-server:latest
     container_name: postgresql-mcp-server
     ports:
-      - "8080:8080"
+      - "3000:3000"
     environment:
       MCP_HOST: 0.0.0.0
-      MCP_PORT: 8080
+      MCP_PORT: 3000
       MCP_API_KEY: ${MCP_API_KEY}
       CORS_ORIGINS: ${CORS_ORIGINS}
       POSTGRES_HOST: ${POSTGRES_HOST}
@@ -115,7 +115,7 @@ QUERY_TIMEOUT=30
 
 In the "Reverse Proxy Settings" section:
 
-- **Port**: `8080`
+- **Port**: `3000`
 - **Protocol**: HTTPS (Elestio provides SSL automatically)
 
 Pipeline name will auto-fill, customize if needed.

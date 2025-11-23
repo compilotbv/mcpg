@@ -638,7 +638,7 @@ def main():
     import uvicorn
     
     host = os.getenv("MCP_HOST", "0.0.0.0")
-    port = int(os.getenv("MCP_PORT", "8080"))
+    port = int(os.getenv("MCP_PORT", "3000"))
     
     logger.info(f"🚀 Starting server on {host}:{port}")
     logger.info(f"🔑 API Key: {auth_manager.api_key}")

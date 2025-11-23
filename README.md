@@ -41,7 +41,7 @@ cp .env.example .env
 docker-compose up -d
 ```
 
-Server will be available at `http://localhost:8080`
+Server will be available at `http://localhost:3000`
 
 ### 4. Configure Cursor IDE
 
@@ -51,7 +51,7 @@ Add to Cursor MCP settings:
 {
   "mcpServers": {
     "postgresql": {
-      "url": "https://your-server.com:8080",
+      "url": "https://your-server.com:3000",
       "headers": {
         "Authorization": "Bearer your_api_key"
       }

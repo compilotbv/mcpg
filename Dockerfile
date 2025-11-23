@@ -31,7 +31,7 @@ USER mcpuser
 ENV PYTHONPATH=/app
 
 # Expose port for HTTP/SSE transport
-EXPOSE 8080
+EXPOSE 3000
 
 # Set entrypoint to run the HTTP MCP server
 ENTRYPOINT ["python", "-m", "src.postgresql_mcp_server.server_http"]
