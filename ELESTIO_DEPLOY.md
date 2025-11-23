@@ -1,34 +1,99 @@
 # Deploying PostgreSQL MCP Server on Elestio
 
-Step-by-step guide for deploying to Elestio.
+Complete guide for deploying to Elestio using Custom docker-compose template.
 
 ## Prerequisites
 
-- Elestio account
-- PostgreSQL database (can be on Elestio or elsewhere)
-- Git repository with this code
+- Elestio account ([signup here](https://elest.io))
+- Docker Hub account (or other registry)
+- PostgreSQL database credentials
 
-## Step 1: Prepare Environment
+## Step 1: Build and Push Docker Image
 
-Generate a secure API key:
+```bash
+# Build the image
+docker build -t your-dockerhub-username/postgresql-mcp-server:latest .
+
+# Login to Docker Hub
+docker login
+
+# Push to registry
+docker push your-dockerhub-username/postgresql-mcp-server:latest
+```
+
+## Step 2: Generate API Key
 
 ```bash
 python3 -c "import secrets; print(secrets.token_urlsafe(32))"
 ```
 
-Save this key - you'll need it for both Elestio and Cursor config.
+Save this key for Step 4.
 
-## Step 2: Deploy on Elestio
+## Step 3: Deploy on Elestio
 
-### Option A: Using Docker Compose
+1. **Go to CI/CD** from left sidebar
+2. **Select "Docker compose"** as deployment source
+3. **Choose "Custom docker-compose"** template
+4. **Click Deploy** button
 
-1. Create new service on Elestio
-2. Choose "Docker Compose" template
-3. Upload your `docker-compose.yml`
-4. Configure environment variables in Elestio dashboard:
+## Step 4: Choose Deployment Target
 
-```env
-MCP_API_KEY=your_generated_api_key
+### Option A: Deploy on New VM
+- Select cloud provider (AWS, DigitalOcean, Vultr, Linode, Hetzner)
+- Choose region
+- Select service plan
+- Name your target
+
+### Option B: Deploy on Existing VM
+- Select existing CI/CD target from dropdown
+
+Click **Next**
+
+## Step 5: Configure Docker Image
+
+### Docker Image Settings:
+
+**Docker Compose Content:**
+Paste your `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  postgresql-mcp-server:
+    image: your-dockerhub-username/postgresql-mcp-server:latest
+    container_name: postgresql-mcp-server
+    ports:
+      - "8080:8080"
+    environment:
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8080
+      MCP_API_KEY: ${MCP_API_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_READONLY: ${POSTGRES_READONLY}
+      POSTGRES_SSLMODE: ${POSTGRES_SSLMODE}
+      POSTGRES_POOL_MIN: ${POSTGRES_POOL_MIN}
+      POSTGRES_POOL_MAX: ${POSTGRES_POOL_MAX}
+      QUERY_TIMEOUT: ${QUERY_TIMEOUT}
+    restart: unless-stopped
+```
+
+**If using private registry:**
+- ☑ Check "Use a private Docker registry"
+- Enter registry URL, username, password
+
+## Step 6: Configure Environment Variables
+
+Add all ENV variables in the Elestio UI:
+
+### Required Variables:
+```
+MCP_API_KEY=your_generated_api_key_from_step_2
 POSTGRES_HOST=your_postgres_host
 POSTGRES_PORT=5432
 POSTGRES_DB=your_database
@@ -36,134 +101,181 @@ POSTGRES_USER=your_user
 POSTGRES_PASSWORD=your_password
 ```
 
-5. Deploy
+### Optional Variables:
+```
+CORS_ORIGINS=*
+POSTGRES_READONLY=false
+POSTGRES_SSLMODE=prefer
+POSTGRES_POOL_MIN=1
+POSTGRES_POOL_MAX=10
+QUERY_TIMEOUT=30
+```
 
-### Option B: Using Dockerfile
+## Step 7: Configure Reverse Proxy
 
-1. Create new service → Custom Docker
-2. Point to your Git repository
-3. Set environment variables
-4. Set exposed port: 8080
-5. Deploy
+In the "Reverse Proxy Settings" section:
 
-## Step 3: Note Your URLs
+- **Port**: `8080`
+- **Protocol**: HTTPS (Elestio provides SSL automatically)
 
-After deployment, Elestio provides:
-- Public URL: `https://your-service.elestio.app`
-- Port: 8080 (mapped automatically)
+Pipeline name will auto-fill, customize if needed.
 
-## Step 4: Configure Cursor IDE
+## Step 8: Create Pipeline
 
-Update your Cursor MCP settings:
+Click **"Create CI/CD pipeline"**
 
-**Location:** 
-- macOS: `~/Library/Application Support/Cursor/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
-- Linux: `~/.config/Cursor/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
-- Windows: `%APPDATA%\Cursor\User\globalStorage\rooveterinaryinc.roo-cline\settings\cline_mcp_settings.json`
+Elestio will:
+- Deploy your container
+- Configure reverse proxy
+- Set up SSL certificate
+- Provide you with public URL
 
-**Configuration:**
+## Step 9: Get Your Service URL
+
+After deployment (2-3 minutes):
+
+1. Go to your pipeline dashboard
+2. Note the public URL: `https://your-service-xxxxx.elestio.app`
+3. Test health endpoint:
+
+```bash
+curl https://your-service-xxxxx.elestio.app/health
+```
+
+## Step 10: Configure Cursor IDE
+
+Update Cursor MCP settings:
+
+**macOS:** `~/Library/Application Support/Cursor/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
+
+**Linux:** `~/.config/Cursor/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
+
+**Windows:** `%APPDATA%\Cursor\User\globalStorage\rooveterinaryinc.roo-cline\settings\cline_mcp_settings.json`
 
 ```json
 {
   "mcpServers": {
     "postgresql": {
-      "url": "https://your-service.elestio.app:8080",
+      "url": "https://your-service-xxxxx.elestio.app",
       "headers": {
-        "Authorization": "Bearer your_generated_api_key"
+        "Authorization": "Bearer your_api_key_from_step_2"
       }
     }
   }
 }
 ```
 
-## Step 5: Test Connection
+## Step 11: Test in Cursor
 
-```bash
-# Test health endpoint
-curl https://your-service.elestio.app:8080/health
-
-# Test authentication
-curl -H "Authorization: Bearer your_api_key" \
-  https://your-service.elestio.app:8080/tools
-
-# Test a tool
-curl -X POST \
-  -H "Authorization: Bearer your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "SELECT version()"}' \
-  https://your-service.elestio.app:8080/tools/execute_query
-```
-
-## Step 6: Use in Cursor
-
-Restart Cursor and start using natural language:
-
+Restart Cursor and try:
 - "Show me all tables"
 - "What's the structure of the users table?"
 - "List all databases"
 
-## Security Best Practices for Elestio
+## Testing Your Deployment
 
-1. **Use strong API key** - 32+ random characters
-2. **Enable HTTPS** - Elestio provides SSL by default
-3. **Restrict CORS** - Set `CORS_ORIGINS` to your domain only
-4. **Use read-only PostgreSQL user** for safer queries
-5. **Set POSTGRES_READONLY=true** for exploration
-6. **Use PostgreSQL SSL** - Set `POSTGRES_SSLMODE=require`
-7. **Monitor logs** - Check Elestio logs regularly
+### Test Endpoints
+
+```bash
+# Health check
+curl https://your-service.elestio.app/health
+
+# List tools (requires auth)
+curl -H "Authorization: Bearer your_api_key" \
+  https://your-service.elestio.app/tools
+
+# Execute query
+curl -X POST \
+  -H "Authorization: Bearer your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "SELECT version()"}' \
+  https://your-service.elestio.app/tools/execute_query
+```
+
+## Updating Your Deployment
+
+### Method 1: Push New Image
+
+```bash
+# Build new version
+docker build -t your-dockerhub-username/postgresql-mcp-server:latest .
+
+# Push to registry
+docker push your-dockerhub-username/postgresql-mcp-server:latest
+
+# In Elestio dashboard: Restart pipeline to pull new image
+```
+
+### Method 2: Update docker-compose.yml
+
+1. Go to your pipeline in Elestio
+2. Edit configuration
+3. Update docker-compose content
+4. Save and redeploy
 
 ## Troubleshooting
 
-### Connection Refused
+### Service Won't Start
 
-- Check service is running in Elestio dashboard
-- Verify port 8080 is exposed
-- Check firewall rules
+**Check logs in Elestio:**
+1. Go to pipeline dashboard
+2. Click "Logs"
+3. Look for errors
 
-### Authentication Failed
+**Common issues:**
+- Missing ENV variables
+- Wrong PostgreSQL credentials
+- Port conflicts
 
-- Verify API key matches in both .env and Cursor config
-- Check Authorization header format: `Bearer <key>`
+### Can't Connect from Cursor
+
+**Verify:**
+1. Service is running: `curl https://your-service.elestio.app/health`
+2. API key matches in both Elestio ENV and Cursor config
+3. Authorization header format: `Bearer <key>` (note the space)
 
 ### Database Connection Failed
 
-- Verify PostgreSQL credentials
-- Check PostgreSQL allows connections from Elestio IP
-- Test with: `curl https://your-service.elestio.app:8080/health`
+**Check:**
+1. PostgreSQL allows external connections
+2. Firewall allows Elestio IP
+3. Credentials are correct
+4. Test with health endpoint
 
-### CORS Errors
+### Authentication Errors
 
-- Set `CORS_ORIGINS=https://cursor.sh,https://cursor.com`
-- Or use `*` for development (not recommended for production)
+**Common causes:**
+1. API key mismatch
+2. Missing "Bearer " prefix
+3. Extra spaces in key
+4. Key not set in ENV variables
 
-## Updating the Deployment
+## Security Best Practices
 
-```bash
-# Push changes to git
-git push origin main
-
-# In Elestio dashboard:
-# 1. Go to your service
-# 2. Click "Rebuild"
-# Or enable auto-deploy on git push
-```
-
-## Monitoring
-
-Check logs in Elestio dashboard:
-- Application logs
-- Error logs
-- Access logs
-
-Set up alerts for:
-- Service downtime
-- High error rates
-- Failed authentication attempts
+1. **Use strong API key** (32+ characters)
+2. **Restrict CORS** - Set `CORS_ORIGINS` to your domain only
+3. **Use PostgreSQL SSL** - Set `POSTGRES_SSLMODE=require`
+4. **Read-only mode** - Set `POSTGRES_READONLY=true` for queries
+5. **Monitor access logs** in Elestio dashboard
+6. **Rotate API keys** regularly
+7. **Use private Docker registry** for proprietary code
 
 ## Cost Optimization
 
+- Choose appropriate VM size for your load
 - Use connection pooling (already configured)
-- Set appropriate `POSTGRES_POOL_MAX`
-- Monitor and optimize query performance
-- Use read replicas for heavy read workloads
+- Set `POSTGRES_POOL_MAX` based on your DB limits
+- Monitor resource usage in Elestio dashboard
+- Scale up/down as needed
 
+## Support
+
+- **Elestio Support**: support@elest.io or ticketing system
+- **Elestio Discord**: [Join here](https://discord.gg/elestio)
+- **Documentation**: https://docs.elest.io
+
+## Additional Resources
+
+- [Elestio Custom docker-compose Guide](https://docs.elest.io/books/cicd-pipelines/page/deploy-own-docker-compose-image-using-elestio-custom-docker-compose)
+- [Elestio CI/CD Overview](https://docs.elest.io/books/cicd-pipelines)
+- [MCP Protocol Documentation](https://modelcontextprotocol.io/)
