@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "postgresql": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "--name",
+        "postgresql-mcp-server",
+        "-e",
+        "POSTGRES_HOST=host.docker.internal",
+        "-e",
+        "POSTGRES_PORT=5432",
+        "-e",
+        "POSTGRES_DB=postgres",
+        "-e",
+        "POSTGRES_USER=postgres",
+        "-e",
+        "POSTGRES_PASSWORD=your_password_here",
+        "-e",
+        "POSTGRES_READONLY=false",
+        "postgresql-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}
+

@@ -1,0 +1,18 @@
+# MCP Server SDK
+mcp>=1.0.0
+
+# PostgreSQL adapter
+psycopg2-binary>=2.9.9
+
+# Async support
+asyncio-mqtt>=0.16.1
+
+# Data validation and serialization
+pydantic>=2.5.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# JSON handling
+orjson>=3.9.10
+
